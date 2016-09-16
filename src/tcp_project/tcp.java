@@ -46,7 +46,6 @@ class tcpserver {
 		    }
 		}
 		return folderMap;
->>>>>>> 68e12b4ce128d28456f24e06a4dd5d4040dc4eb7
 	}
 
 
