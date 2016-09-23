@@ -2,6 +2,8 @@ package client;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
@@ -19,13 +21,23 @@ class tcpclient {
 		// connection.
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-		System.out.println("Enter a message: ");
-		String message = inFromUser.readLine();
-		outToServer.writeBytes(message + '\n');
-
-		// Recieve message from server:
-		System.out.println("Server replied with: " + inFromServer.readLine());
+		System.out.println("Enter a file name: ");
+		String fileName = inFromUser.readLine();
+		// Capture expected file name
+		outToServer.writeBytes(fileName + '\n');
+		// send request for file
+		FileOutputStream fileIn = new FileOutputStream(fileName);
+		// Create file input stream
+		byte[] buffer = new byte[1024];
+		int count = 0;
+		//Read input stream into buffer, then write current buffer state to file.
+		while (count != -1) {
+			count = clientSocket.getInputStream().read(buffer, 0, 1024);
+			fileIn.write(buffer);
+		}
+		fileIn.close();
+		inFromServer.close();
+		outToServer.close();
 		clientSocket.close();
 
 	}
