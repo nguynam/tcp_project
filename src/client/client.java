@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
@@ -31,16 +32,26 @@ class tcpclient {
 			// Capture expected file name
 			outToServer.writeBytes(fileName + '\n');
 			// send request for file
-			FileOutputStream fileIn = new FileOutputStream(fileName);
 			// Create file input stream
 			byte[] buffer = new byte[1024];
-			int count = 0;
-			//Read input stream into buffer, then write current buffer state to file.
-			while (count != -1) {
-				count = clientSocket.getInputStream().read(buffer, 0, 1024);
-				fileIn.write(buffer);
+			InputStream inStream = clientSocket.getInputStream();
+			
+			int errorCheck = inStream.read();
+			//Read first byte to check for error.
+			//Error check = 2 signifies unsuccessful file search.
+			//Error check = 1 signifies successful file search.
+			if(errorCheck != 2){
+				//Read input stream into buffer, then write current buffer state to file.
+				FileOutputStream fileIn = new FileOutputStream(fileName);
+				int count;
+				while ((count = inStream.read(buffer, 0, 1024)) != -1) {
+					fileIn.write(buffer);
+				}
+				fileIn.close();
+			}else{
+				System.out.println("File not found");
+			
 			}
-			fileIn.close();
 			inFromServer.close();
 			outToServer.close();
 			clientSocket.close();
