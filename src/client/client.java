@@ -10,6 +10,7 @@ import java.net.Socket;
 class tcpclient {
 
 	public static void main(String args[]) throws Exception {
+		String correctAddress = "127.0.0.1";
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 		System.out.println("Enter server address: ");
 		String address = inFromUser.readLine();
@@ -17,6 +18,9 @@ class tcpclient {
 		int port = Integer.parseInt(inFromUser.readLine());
 		if(port > 65535){
 			System.out.println("Invalid port number.");
+		}
+		if(!address.equals(correctAddress)){
+			System.out.println("Invalid address.");
 		}
 
 		try{
