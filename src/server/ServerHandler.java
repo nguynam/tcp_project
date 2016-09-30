@@ -21,6 +21,7 @@ public class ServerHandler implements Runnable {
 	@Override
 	public void run() {
 		try {
+			boolean on = true;
 			Map<String, File> fileMap = scanFolder(DIRECTORY);
 			// Scan directory for files
 
@@ -28,8 +29,14 @@ public class ServerHandler implements Runnable {
 			System.out.println("Client connected.");
 			DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
 			BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			while (true) {
+			while (on) {
 				String requestedFile = inFromClient.readLine();
+				
+				if(requestedFile.equals("Exit")){
+					on = false;
+					break;
+				}
+				
 				System.out.println("The client requested " + requestedFile);
 				byte[] byteArray = new byte[1];
 				if (fileMap.containsKey(requestedFile)) {

@@ -12,6 +12,7 @@ class tcpclient {
 
 	public static void main(String args[]) throws Exception {
 		String correctAddress = "127.0.0.1";
+		boolean on = true;
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 		System.out.println("Enter server address: ");
 		String address = inFromUser.readLine();
@@ -23,47 +24,56 @@ class tcpclient {
 		if(!address.equals(correctAddress)){
 			System.out.println("Invalid address.");
 		}
+		//Socket clientSocket = new Socket(address, port);
 
-		try{
-			Socket clientSocket = new Socket(address, port);
-		
-			// creates a socket with address and port and attempts to make
-			// connection.
-			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			System.out.println("Enter a file name: ");
-			String fileName = inFromUser.readLine();
-			// Capture expected file name
-			outToServer.writeBytes(fileName + '\n');
-			// send request for file
-			// Create file input stream
-			byte[] buffer = new byte[1024];
-			InputStream inStream = clientSocket.getInputStream();
+		while(on){
+			try{
+				Socket clientSocket = new Socket(address, port);
 			
-			int errorCheck = inStream.read();
-			//Read first byte to check for error.
-			//Error check = 2 signifies unsuccessful file search.
-			//Error check = 1 signifies successful file search.
-			if(errorCheck != 2){
-				//Read input stream into buffer, then write current buffer state to file.
-				FileOutputStream fileIn = new FileOutputStream(fileName);
-				int count;
-				while ((count = inStream.read(buffer, 0, 1024)) != -1) {
-					fileIn.write(buffer);
+				// creates a socket with address and port and attempts to make
+				// connection.
+				DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+				BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				System.out.println("Enter a file name or exit: ");
+				String fileName = inFromUser.readLine();
+				
+				if(fileName.equals("Exit")){
+					on = false;
+					clientSocket.close();
+					break;
 				}
-				fileIn.close();
-			}else{
-				System.out.println("File not found");
-			
+				// Capture expected file name
+				outToServer.writeBytes(fileName + '\n');
+				// send request for file
+				// Create file input stream
+				byte[] buffer = new byte[1024];
+				InputStream inStream = clientSocket.getInputStream();
+				
+				int errorCheck = inStream.read();
+				//Read first byte to check for error.
+				//Error check = 2 signifies unsuccessful file search.
+				//Error check = 1 signifies successful file search.
+				if(errorCheck != 2){
+					//Read input stream into buffer, then write current buffer state to file.
+					FileOutputStream fileIn = new FileOutputStream(fileName);
+					int count;
+					while ((count = inStream.read(buffer, 0, 1024)) != -1) {
+						fileIn.write(buffer);
+					}
+					fileIn.close();
+				}else{
+					System.out.println("File not found");
+				
+				}
+				//inFromServer.close();
+				//outToServer.close();
+				//clientSocket.close();
 			}
-			inFromServer.close();
-			outToServer.close();
-			clientSocket.close();
+			catch(Exception e){
+				System.out.println("Could not connect to server.");
+				break;
+			}
 		}
-		catch(Exception e){
-			System.out.println("Could not connect to server.");
-		}
-
 	}
 
 }

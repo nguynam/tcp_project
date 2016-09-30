@@ -9,6 +9,7 @@ import java.net.Socket;
 class tcpserver {
 
 	public static void main(String args[]) throws Exception {
+		boolean on = true;
 		// Folder to scan for files
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 		// Setup reader for user input (in terminal).
@@ -25,10 +26,11 @@ class tcpserver {
 
 		}
 		// Maybe change to check if latest input is /quit
-		while (true) {
+		while (on) {
 			// Accept new connections.
 			// Create a new serverHandler instance for each connection.
 			Socket clientSocket = listenSocket.accept();
+
 			Runnable r = new ServerHandler(clientSocket);
 			Thread t = new Thread(r);
 			t.start();
