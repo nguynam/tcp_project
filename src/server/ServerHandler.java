@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,9 +28,10 @@ public class ServerHandler implements Runnable {
 
 			// Client now connected
 			System.out.println("Client connected.");
-			DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
 			BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
 			while (on) {
+				//Get new instance of outputStream to client since it must close to signal end of stream.
 				String requestedFile = inFromClient.readLine();
 				
 				if(requestedFile.equals("Exit")){
@@ -38,24 +40,27 @@ public class ServerHandler implements Runnable {
 				}
 				
 				System.out.println("The client requested " + requestedFile);
-				byte[] byteArray = new byte[1];
 				if (fileMap.containsKey(requestedFile)) {
 					File fileToSend = fileMap.get(requestedFile);
 					// Determine specified file if it exists
-					byteArray = new byte[(int) fileToSend.length() + 1];
+					int fileSize = (int)fileToSend.length();
+					byte[] byteArray = ByteBuffer.allocate(fileSize + 4).putInt(0, fileSize).array();
 					BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(fileToSend));
-					fileIn.read(byteArray, 1, (int) fileToSend.length());
-					byteArray[0] = 1;
+					fileIn.read(byteArray, 4, fileSize);
+					
 					// Signifies successful search for file.
 					outToClient.write(byteArray);
+					outToClient.flush();
+					//outToClient.writeChar('\n');
+					//Send end of stream signal
+					//outToClient.writeBytes("\r\n");
 					// Send files
 					fileIn.close();
-					outToClient.flush();
-					clientSocket.close();
 				} else {
-					byteArray[0] = 2;
+					byte[] byteArray = ByteBuffer.allocate(4).putInt(-1).array();
 					// Signal an error occurred
 					outToClient.write(byteArray);
+					outToClient.close();
 					// Send byte array (with error)
 					System.out.println("File not found.");
 				}
