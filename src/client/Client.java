@@ -39,6 +39,8 @@ class tcpclient {
 				// Capture expected file name.
 				if (fileName.equals("Exit")) {
 					on = false;
+					outToServer.writeBytes("Exit");
+					//Signal to server that connection is closing.
 					clientSocket.close();
 					break;
 				}

@@ -37,6 +37,8 @@ public class ServerHandler implements Runnable {
 				// Capture requested file name.
 				if (requestedFile.equals("Exit")) {
 					on = false;
+					System.out.println("Client Disconnected.");
+					clientSocket.close();
 					break;
 				}
 
